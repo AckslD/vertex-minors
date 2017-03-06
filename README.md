@@ -1,5 +1,5 @@
 # sage_classes
-New class for graphs in sage with additional features, such as local complementations and Pauli-measurements.
+New class for graphs in sage which inherits the standard Graph-class but has additional features, such as local complementations and Pauli-measurements.
 
 To use the class, start sage and load the script by writing `load("MyClasses.sage")`.
 
