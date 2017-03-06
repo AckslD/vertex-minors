@@ -1,2 +1,2 @@
 # sage_classes
-Classes for graphs and isotropic systems in sage.
+New class for graphs in sage with additional features, such as local complementations and Pauli-measurements.
