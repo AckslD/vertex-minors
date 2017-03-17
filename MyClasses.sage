@@ -96,7 +96,7 @@ class MyGraph(Graph):
             G=self
         else:
             G=MyGraph(self)
-        G.tau(a)
+        G.tau(a,inplace=True)
         G.delete_vertex(a)
         G.name('')
         if not inplace:
