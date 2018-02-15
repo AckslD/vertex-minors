@@ -1,6 +1,8 @@
+from itertools import chain
+
 def M2vec(M):
     """Returns a vectorization of M, column-stacking."""
-    return vector(GF(2),sum([list(row) for row in M.transpose()],[]))
+    return list(chain.from_iterable(M.columns()))
 
 def E(i,n):
     """Returns the matrix E_i which has a single nonzero value 1 at pos (i,i)"""
@@ -29,16 +31,17 @@ def constr_mat(A1,A2):
     n=A1.nrows()
     if not n==A2.nrows():
         raise TypeError("Matrices not of the same size.")
-    mat1=matrix(GF(2),[M2vec(M_tim_E(A1,i)) for i in range(n)]).transpose()
-    mat2=matrix(GF(2),[M2vec(M_tim_E(A1,i)*A2) for i in range(n)]).transpose()
-    mat3=matrix(GF(2),[M2vec(E(i,n)) for i in range(n)]).transpose()
-    mat4=matrix(GF(2),[M2vec(E_tim_M(A2,i)) for i in range(n)]).transpose()
-    return block_matrix(GF(2),[[mat1,mat2,mat3,mat4]],subdivide=False)
+    mat1=matrix(GF(2),map(lambda i:M2vec(M_tim_E(A1,i)),range(n)))
+    mat2=matrix(GF(2),map(lambda i:M2vec(M_tim_E(A1,i)*A2),range(n)))
+    mat3=matrix(GF(2),map(lambda i:M2vec(E(i,n)),range(n)))
+    mat4=matrix(GF(2),map(lambda i:M2vec(E_tim_M(A2,i)),range(n)))
+    return block_matrix(GF(2),[[mat1],[mat2],[mat3],[mat4]],subdivide=False).transpose()
 
 def cond(vec):
     """Tests the cond for ABCD to be symplectic transformation AD+BC=I, but in terms of the vector consisting of the matrices diagonals and for the equivalent statement that 2x2 matrices with A_aa and so on if nonsingular"""
     n=vec.length()/4
-    return all([not matrix(GF(2),[[vec[a],vec[n+a]],[vec[2*n+a],vec[3*n+a]]]).is_singular() for a in range(n)])
+    # return all([not matrix(GF(2),[[vec[a],vec[n+a]],[vec[2*n+a],vec[3*n+a]]]).is_singular() for a in range(n)])
+    return all(map(lambda a:vec[a]*vec[3*n+a]+vec[n+a]*vec[2*n+a]!=0,range(n)))
 
 def test_cond(A1,A2,ret_sol=False):
     """Tests if the graphs with adj.matrices A1 and A2 are LC-equivalent, efficiently O(n^4)"""
@@ -46,14 +49,29 @@ def test_cond(A1,A2,ret_sol=False):
     if V.dimension()<=4:
         for vec in V:
             if cond(vec):
-                return True
-        return False
+                if ret_sol:
+                    return vec
+                else:
+                    return True
+        if ret_sol:
+            return None
+        else:
+            return False
     else:
         B=V.basis()
         for b1 in B:
             if cond(b1):
-                return True
+                if ret_sol:
+                    return b1
+                else:
+                    return True
             for b2 in B:
                 if cond(b1+b2):
-                    return True
-        return False
+                    if ret_sol:
+                        return b1+b2
+                    else:
+                        return True
+        if ret_sol:
+            return None
+        else:
+            return False

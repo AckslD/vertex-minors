@@ -49,9 +49,9 @@ while restart:
         plt.draw()
         pathcoord=plt.ginput(n=0,timeout=0,mouse_stop=3,mouse_pop=2)
         if len(pathcoord)>1:
-            path=map(whichvertex,pathcoord)
+            path=list(map(whichvertex,pathcoord))
             if all(map(lambda x:x!=-1,path)):
-                for i in range(len(path)-1):
+                for i in range(len(list(path))-1):
                     E+=[[path[i],path[i+1]]]
         else:
             break
