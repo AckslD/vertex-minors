@@ -210,21 +210,65 @@ class SimpleGraph(Graph):
                 else:
                     return False
             return test_cond(self.adjacency_matrix(),other.adjacency_matrix())
+    def has_VM(self,other,method='brute',check_DH=False):
+        """
+        Checks if other is a vertex-minor of self.
+        There are currently two method available:
+            'brute': A non-efficient algorithm for any graphs, both self and other can be disconnected but can increase the runtime.
+                Output: Returns a sequence of vertices 'm' such that the corresponding sequence of local complementations gives a graph which induced subgraph on V(other) is LC-equivalent to other. If no such sequence exists, None is returned.
+            'DH': An efficient method for instances where self is distance-hereditary and other is a star graph. If check_DH is set to True then it will be checked whether self is actually distance-hereditary. If other is not a star graph an ValueError is raised.
+                Output: Returns a sequence of vertices 'm' such that the corresponding sequence of local complementations gives a graph which induced subgraph on V(other) is a star graph. If no such sequence exists, None is returned.
+        """
+        
+        if method=='brute':
+            (ans,bases)=self.can_meas(other)
+            if not ans:
+                return None
+
+            #Convert meas bases to sequence of local complementations
+            m=[]
+            for base in bases:
+                if base[1]=='Z':
+                    pass
+                elif base[1]=='Y':
+                    m.append(base[0])
+                else:
+                    m.append(base[0])
+                    m.append(int(base[1]))
+                    m.append(base[0])
+            return m
+        elif method=='DH':
+            if check_DH:
+                if not self.is_DH():
+                    raise ValueError("Graph (self) is not distance-hereditary")
+            degrees=Set(other.degree())
+            n=len(other)
+            if not degrees==Set([1,n-1]):
+                raise ValueError("Graph (other) is not an star graph")
+
+            try:
+                m=self.can_meas_DH(other,check_rwd=False)
+                return m
+            except RuntimeError:
+                return None
+
     def can_meas(self,other,inds=None,start=True):
         """Brute force test if G can be turned into Gp by measuring vertices in inds in some bases. Returns a (ans,meas) where ans is True of False depending on if it is possible to meas G to Gp or not and meas is a dictionary with which indices should be measured in which basis."""
         try:
             other=graphs.StarGraph(other-1)
         except:
             pass
-        if not other.is_connected():
-            raise NotImplementedError("Other graph should be connected")
+        self_connected=self.is_connected()
+        other_connected=other.is_connected()
+        # if not other.is_connected():
+        #     raise NotImplementedError("Other graph should be connected")
         if start:
             if inds==None:
                 inds=list(Set(self.vertices())-Set(other.vertices()))
             rem_inds=Set(self.vertices())-Set(inds)
             if not rem_inds==Set(other.vertices()):
                 raise ValueError("V(Gp)!=V(G)\inds")
-        if not self.is_connected():
+        if (not self_connected) and other_connected:
             CC_inds=self.connected_component_containing_vertex(rem_inds.random_element())
             G_sub=self.subgraph(CC_inds)
             try:
@@ -245,7 +289,7 @@ class SimpleGraph(Graph):
         noneq=[]
         for bas in ["Z","Y","X"]:
             (post,meas)=self.meas_seq(inds[:1],[bas],ret_meas=True)
-            if post.is_connected():
+            if post.is_connected() or (not other_connected):
                 if not any(post.is_LC_eq(x) for x in noneq):
                     (ans,bases)=post.can_meas(other,inds=inds[1:],start=False)
                     if ans:
@@ -289,6 +333,8 @@ class SimpleGraph(Graph):
             if Gsub.degree(c)==(len(V)-2):
                 break
         P=G.shortest_path(V[-1],c)
+        if not P:
+            raise RuntimeError("Target vertices not connected in graph")
         for v in P[1:-1]:
             leaf_ns=[l for l in V[:-1] if (l!=c and G.has_edge(V[-1],l))]
             if leaf_ns:
@@ -378,7 +424,7 @@ class SimpleGraph(Graph):
                     if found:
                         break
                 if not found:
-                    raise ValueError("star on V (|V|="+str(len(V))+") is not a vertexminor")
+                    raise RuntimeError("star on V (|V|="+str(len(V))+") is not a vertexminor")
                 if len(CC)==2:
                     return t_seq
                 L.append(u)
@@ -406,7 +452,7 @@ class SimpleGraph(Graph):
                 if found:
                     break
             if not found:
-                raise ValueError("star on V (|V|="+str(len(V))+") is not a vertexminor")
+                raise RuntimeError("star on V (|V|="+str(len(V))+") is not a vertexminor")
             return t_seq
     def to_isotropic(self,Ain=None,Bin=None):
         """Returns the isotropic system of the graph. If the supplementary vectors are not specified they are chosen as A=(w,...,w) and B=(1,...,1)."""
