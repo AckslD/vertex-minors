@@ -30,6 +30,10 @@ G.is_LC_eq(graphs.StarGraph(9))    #Tests if G is LC-equivalent to the star grap
 G.has_VM(graphs.StarGraph(3))      #Tests if G can be measured into a star graph on 4 vertices.
 ```
 
+#### Graphs used in proofs
+
+In https://arxiv.org/abs/1805.05306 we proved two theorems (Theorem 4.3 and 4.5) by using the fact that a few smaller graphs were not distance-hereditary. The file `Graphs_in_proofs/graphs_in_proof.sage` can be used to check this. Run the file in by typing `sage Graphs_in_proofs/graphs_in_proofs.sage`. This will generate all the graphs used in the proofs of the theorems mentioned and check that these are not distance-hereditary, using the method `is_LC_eq`.
+
 ## MONA
 
 The files in MONA implements the monadic second-order formula describing whether a graph is a vertex-minor of another, which we describe in the paper https://arxiv.org/abs/1805.05305
