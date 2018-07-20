@@ -406,7 +406,7 @@ class SimpleGraph(Graph):
                 found=False
                 for com in common:
                     if not G.has_edge((com,c)):
-                        if is_good(G,c,V,com):
+                        if G.is_good(c,V,com):
                             t_seq+=[com]
                             found=True
                             G=(G*[com])
@@ -416,7 +416,7 @@ class SimpleGraph(Graph):
                             if not any([G.has_edge((com2,x)) for x in Vmc]):
                                 Gtmp=SimpleGraph(G)
                                 Gtmp.delete_edge((com,c))
-                                if is_good(Gtmp,c,V,com):
+                                if Gtmp.is_good(c,V,com):
                                     t_seq+=[com2,com]
                                     found=True
                                     G=(G*[com2,com])
@@ -434,7 +434,7 @@ class SimpleGraph(Graph):
             found=False
             for com in common:
                 if not G.has_edge((com,c)):
-                    if is_good(G,c,V,com):
+                    if G.is_good(c,V,com):
                         t_seq+=[com]
                         found=True
                         G=(G*[com])
@@ -444,7 +444,7 @@ class SimpleGraph(Graph):
                         if not any([G.has_edge((com2,x)) for x in Vmc]):
                             Gtmp=SimpleGraph(G)
                             Gtmp.delete_edge((com,c))
-                            if is_good(Gtmp,c,V,com):
+                            if Gtmp.is_good(c,V,com):
                                 t_seq+=[com2,com]
                                 found=True
                                 G=(G*[com2,com])
