@@ -1,4 +1,6 @@
 load("LC.sage")
+
+
 class SimpleGraph(Graph):
     def __init__(self,*args,**kwargs):
         """Can be initialized in the same way as Graph(). An additional option is to give a list, which by default will give a complete graph on the vertices provided in the list, if format='empty' is given the graph is instead a graph on the vertices in the list with no edges."""
@@ -130,14 +132,15 @@ class SimpleGraph(Graph):
         G.name('')
         if not inplace:
             return G
-    def meas_X(self,a,b=None,inplace=False):
-        """Measures the graph at vertex a in X-basis. If inplace, this is done on the graph itself and nothing is returned, otherwise a new graph is returned. if b is not specified a neighbor of a is picked"""
+    def meas_X(self,a,b=None,inplace=False, return_special=False):
+        """Measures the graph at vertex a in X-basis. If inplace, this is done on the graph itself and nothing is returned, otherwise a new graph is returned. if b is not specified a neighbor of a is picked. If return_special is True then the choice of the special neighbor of a is returned"""
         if inplace:
             G=self
         else:
             G=SimpleGraph(self)
         if len(G.neighbors(a))==0:
             G.delete_vertex(a)
+            bp = None
         else:
             if b==None:
                 bp=G.neighbors(a)[0]
@@ -149,7 +152,13 @@ class SimpleGraph(Graph):
             G.delete_vertex(a)
         G.name('')
         if not inplace:
-            return G
+            if return_special:
+                return G, bp
+            else:
+                return G
+        else:
+            if return_special:
+                return bp
     def meas_seq(self,inds,bases,ret_meas=False,inplace=False):
         """Meas the graph on vertices inds and in bases. For X-measuremnts the first neighbor is choosen as special if there is a neighbor. If inplace, this is done on the graph itself and nothing is returned, otherwise a new graph is returned."""
         if not len(inds)==len(bases):
